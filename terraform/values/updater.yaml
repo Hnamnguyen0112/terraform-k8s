@@ -1,0 +1,24 @@
+---
+image:
+  tag: "v0.12.2"
+
+metrics:
+  enabled: true
+
+config:
+  registries:
+    - name: AWS ECR
+      api_url: https://059030294907.dkr.ecr.ap-southeast-1.amazonaws.com
+      prefix: 059030294907.dkr.ecr.ap-southeast-1.amazonaws.com
+      ping: yes
+      insecure: no
+      credentials: ext:/scripts/ecr-login.sh
+      credsexpire: 10h
+      default: true
+
+authScripts:
+  enabled: true
+  scripts:
+    ecr-login.sh: |
+      #!/bin/sh
+      aws ecr --region ap-southeast-1 get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d
