@@ -1,0 +1,36 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: development-next-fe-app
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: next-fe-app=059030294907.dkr.ecr.ap-southeast-1.amazonaws.com/next-fe-app
+    argocd-image-updater.argoproj.io/write-back-method: git 
+    argocd-image-updater.argoproj.io/next-fe-app.pull-secret: "ext:/scripts/ecr-login.sh"
+    argocd-image-updater.argoproj.io/next-fe-app.update-strategy: latest
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: ssh://git@github.com/
+    targetRevision: main
+    path: kubernetes/next-fe-app
+    helm:
+      valueFiles:
+        - values-development.yaml
+             
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: development
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - Validate=true
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
