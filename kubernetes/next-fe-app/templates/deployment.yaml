@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "next-fe-app.labels" . | nindent 4 }}
 spec:
+  revisionHistoryLimit: 0
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
@@ -33,6 +34,14 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- range .Values.extraEnv }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: next-fe-app
+                  key: {{ .name }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
